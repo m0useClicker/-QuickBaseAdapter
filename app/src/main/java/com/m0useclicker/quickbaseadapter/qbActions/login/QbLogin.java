@@ -4,6 +4,7 @@ import android.util.Log;
 
 import com.google.api.client.xml.XmlNamespaceDictionary;
 import com.google.api.client.xml.XmlObjectParser;
+import com.m0useclicker.quickbaseadapter.qbActions.login.responses.AuthResponse;
 
 import java.io.BufferedInputStream;
 import java.io.IOException;
@@ -16,26 +17,32 @@ import java.nio.charset.Charset;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
 public class QbLogin implements IAuthenticator {
-    public static final String InvalidTicket = "";
+    public static final String invalidTicket = "";
 
     @Override
     public String getTicket(String realmSubDomain, String userId, String password) {
-        if (isBlank(realmSubDomain)) {
-            return InvalidTicket;
+        AuthResponse authResponse = getAuthResponse(realmSubDomain, userId, password);
+        return authResponse.errcode == 0? authResponse.ticket: invalidTicket;
+    }
+
+    @Override
+    public AuthResponse getAuthResponse(String realmName, String userId, String password) {
+        if (isBlank(realmName)) {
+            return AuthResponse.invalidAuthResponse();
         }
         if (isBlank(userId)) {
-            return InvalidTicket;
+            return AuthResponse.invalidAuthResponse();
         }
         if (isBlank(password)) {
-            return InvalidTicket;
+            return AuthResponse.invalidAuthResponse();
         }
 
         URL url = null;
         try {
-            url = getAuthUrl(realmSubDomain, userId, password);
+            url = getAuthUrl(realmName, userId, password);
         } catch (MalformedURLException e) {
             Log.e(QbLogin.class.getName(), "Unable to build auth url", e);
-            return InvalidTicket;
+            return AuthResponse.invalidAuthResponse();
         }
 
         HttpURLConnection urlConnection = null;
@@ -43,7 +50,7 @@ public class QbLogin implements IAuthenticator {
             urlConnection = (HttpURLConnection) url.openConnection();
         } catch (IOException e) {
             Log.e(QbLogin.class.getName(), "Unable to open http connection", e);
-            return InvalidTicket;
+            return AuthResponse.invalidAuthResponse();
         }
         try {
             InputStream in = new BufferedInputStream(urlConnection.getInputStream());
@@ -53,14 +60,15 @@ public class QbLogin implements IAuthenticator {
 
             AuthResponse response = xmlObjectParser.parseAndClose(in, Charset.defaultCharset(), AuthResponse.class);
 
-            return response.errcode == 0 ? response.ticket : InvalidTicket;
+            return response;
         } catch (IOException e) {
             Log.e(QbLogin.class.getName(), "Unexpected exception", e);
-            return InvalidTicket;
+            return AuthResponse.invalidAuthResponse();
         } finally {
             urlConnection.disconnect();
         }
     }
+
 
     private static URL getAuthUrl(final String subDomain, final String userId, final String password) throws MalformedURLException {
         String authUrl = String.format("https://%1$s.quickbase.com/db/main?a=API_Authenticate&username=%2$s&password=%3$s", subDomain, userId, password);

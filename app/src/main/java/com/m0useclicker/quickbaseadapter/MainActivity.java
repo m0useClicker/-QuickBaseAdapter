@@ -35,7 +35,7 @@ public class MainActivity extends AppCompatActivity {
         @Override
         protected Boolean doInBackground(Void... params) {
             ticket = authenticator.getTicket(realmName, userId, password);
-            return !ticket.equals(QbLogin.InvalidTicket);
+            return !ticket.equals(QbLogin.invalidTicket);
         }
 
         @Override

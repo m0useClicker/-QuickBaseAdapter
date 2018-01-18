@@ -8,7 +8,7 @@
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
-    tools:context="m0useclicker.com.quickbaseadapter.LoginActivity">
+    tools:context="com.m0useclicker.quickbaseadapter.LoginActivity">
 
     <!-- QbLogin progress -->
     <ProgressBar
@@ -56,7 +56,6 @@
                     android:layout_height="wrap_content"
                     android:hint="@string/prompt_password"
                     android:imeActionId="@+id/login"
-                    android:imeActionLabel="@string/action_sign_in_short"
                     android:imeOptions="actionUnspecified"
                     android:inputType="textPassword"
                     android:maxLines="1"
@@ -69,11 +68,12 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent">
 
-                <EditText
+                <AutoCompleteTextView
                     android:id="@+id/realmSubDomain"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:hint="@string/hint_realmName"/>
+                    android:hint="@string/hint_realmName"
+                    tools:text=".quickbase.com"/>
             </android.support.design.widget.TextInputLayout>
 
             <Button

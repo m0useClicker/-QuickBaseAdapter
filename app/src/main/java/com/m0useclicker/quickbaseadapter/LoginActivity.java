@@ -8,14 +8,12 @@ import android.os.Build;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
-import android.view.KeyEvent;
+import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
-import android.view.inputmethod.EditorInfo;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.TextView;
 
 import com.m0useclicker.quickbaseadapter.qbActions.login.IAuthenticator;
 import com.m0useclicker.quickbaseadapter.qbActions.login.QbLogin;
@@ -24,6 +22,7 @@ import com.m0useclicker.quickbaseadapter.qbActions.login.QbLogin;
  * A login screen that offers login
  */
 public class LoginActivity extends AppCompatActivity {
+    private final IAuthenticator authenticator = new QbLogin();
     private String ticket;
 
     /**
@@ -34,7 +33,7 @@ public class LoginActivity extends AppCompatActivity {
     // UI references.
     private AutoCompleteTextView userIdView;
     private EditText passwordView;
-    private EditText realmSubDomainView;
+    private AutoCompleteTextView realmSubDomainView;
     private View mProgressView;
     private View mLoginFormView;
 
@@ -44,22 +43,11 @@ public class LoginActivity extends AppCompatActivity {
         setContentView(R.layout.activity_login);
         // Set up the login form.
         userIdView = (AutoCompleteTextView) findViewById(R.id.userIdView);
-        realmSubDomainView = (EditText) findViewById(R.id.realmSubDomain);
-
+        realmSubDomainView = (AutoCompleteTextView) findViewById(R.id.realmSubDomain);
         passwordView = (EditText) findViewById(R.id.password);
-        passwordView.setOnEditorActionListener(new TextView.OnEditorActionListener() {
-            @Override
-            public boolean onEditorAction(TextView textView, int id, KeyEvent keyEvent) {
-                if (id == R.id.login || id == EditorInfo.IME_NULL) {
-                    attemptLogin();
-                    return true;
-                }
-                return false;
-            }
-        });
 
-        Button mEmailSignInButton = (Button) findViewById(R.id.sign_in_button);
-        mEmailSignInButton.setOnClickListener(new OnClickListener() {
+        Button signInButton = (Button) findViewById(R.id.sign_in_button);
+        signInButton.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View view) {
                 attemptLogin();
@@ -70,42 +58,32 @@ public class LoginActivity extends AppCompatActivity {
         mProgressView = findViewById(R.id.login_progress);
     }
 
-    /**
-     * Attempts to sign in or register the account specified by the login form.
-     * If there are form errors (invalid email, missing fields, etc.), the
-     * errors are presented and no actual login attempt is made.
-     */
     private void attemptLogin() {
-        if (authTask != null) {
-            return;
-        }
-
         userIdView.setError(null);
         passwordView.setError(null);
         realmSubDomainView.setError(null);
 
-        String realmSubDomain = realmSubDomainView.getText().toString();
-        String userId = userIdView.getText().toString();
-        String password = passwordView.getText().toString();
-
         boolean cancel = false;
-        View focusView = null;
+        View focusView = userIdView;
 
-        if (!TextUtils.isEmpty(password)) {
+        String password = passwordView.getText().toString();
+        if (TextUtils.isEmpty(password)) {
             passwordView.setError(getString(R.string.error_invalid_password));
             focusView = passwordView;
             cancel = true;
         }
 
+        String userId = userIdView.getText().toString();
         if (TextUtils.isEmpty(userId)) {
             userIdView.setError(getString(R.string.error_userId_required));
             focusView = userIdView;
             cancel = true;
         }
 
-        if(!TextUtils.isEmpty(realmSubDomain)){
+        String realmSubDomain = realmSubDomainView.getText().toString();
+        if(TextUtils.isEmpty(realmSubDomain)){
             realmSubDomainView.setError(getString(R.string.error_realmDomain_required));
-            focusView = userIdView;
+            focusView = realmSubDomainView;
             cancel = true;
         }
 
@@ -113,7 +91,7 @@ public class LoginActivity extends AppCompatActivity {
             focusView.requestFocus();
         } else {
             showProgress(true);
-            authTask = new UserLoginTask(realmSubDomain, userId, password, new QbLogin());
+            authTask = new UserLoginTask(realmSubDomain, userId, password, authenticator);
             authTask.execute((Void) null);
         }
     }
@@ -170,25 +148,24 @@ public class LoginActivity extends AppCompatActivity {
         @Override
         protected Boolean doInBackground(Void... params) {
             ticket = authenticator.getTicket(realmName, userId, password);
-            return !ticket.equals(QbLogin.InvalidTicket);
+            return !ticket.equals(QbLogin.invalidTicket);
         }
 
         @Override
         protected void onPostExecute(final Boolean success) {
-            authTask = null;
             showProgress(false);
+
+            Log.i("TAG_LOGIN",String.valueOf(success));
 
             if (success) {
                 finish();
             } else {
-                passwordView.setError(getString(R.string.error_unable_authenticate));
-                passwordView.requestFocus();
+                authTask = null;
             }
         }
 
         @Override
         protected void onCancelled() {
-            authTask = null;
             showProgress(false);
         }
     }
