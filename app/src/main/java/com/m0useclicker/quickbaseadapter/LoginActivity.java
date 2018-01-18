@@ -3,12 +3,13 @@ package com.m0useclicker.quickbaseadapter;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
-import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.AutoCompleteTextView;
@@ -17,13 +18,16 @@ import android.widget.EditText;
 
 import com.m0useclicker.quickbaseadapter.qbActions.login.IAuthenticator;
 import com.m0useclicker.quickbaseadapter.qbActions.login.QbLogin;
+import com.m0useclicker.quickbaseadapter.qbActions.login.responses.AuthResponse;
+
+import static com.m0useclicker.quickbaseadapter.qbActions.login.responses.QbResponse.OkResponseCode;
+import static com.m0useclicker.quickbaseadapter.qbActions.login.responses.QbResponse.StartingErrorCode;
 
 /**
  * A login screen that offers login
  */
 public class LoginActivity extends AppCompatActivity {
     private final IAuthenticator authenticator = new QbLogin();
-    private String ticket;
 
     /**
      * Keep track of the login task to ensure we can cancel it if requested.
@@ -43,8 +47,8 @@ public class LoginActivity extends AppCompatActivity {
         setContentView(R.layout.activity_login);
         // Set up the login form.
         userIdView = (AutoCompleteTextView) findViewById(R.id.userIdView);
-        realmSubDomainView = (AutoCompleteTextView) findViewById(R.id.realmSubDomain);
         passwordView = (EditText) findViewById(R.id.password);
+        realmSubDomainView = (AutoCompleteTextView) findViewById(R.id.realmSubDomain);
 
         Button signInButton = (Button) findViewById(R.id.sign_in_button);
         signInButton.setOnClickListener(new OnClickListener() {
@@ -56,6 +60,18 @@ public class LoginActivity extends AppCompatActivity {
 
         mLoginFormView = findViewById(R.id.login_form);
         mProgressView = findViewById(R.id.login_progress);
+    }
+
+    private void showError(final String errorText) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setMessage(errorText)
+                .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                    }
+                })
+                .setTitle(getString(R.string.auth_error_dialog_title));
+        AlertDialog errorDialog = builder.create();
+        errorDialog.show();
     }
 
     private void attemptLogin() {
@@ -81,7 +97,7 @@ public class LoginActivity extends AppCompatActivity {
         }
 
         String realmSubDomain = realmSubDomainView.getText().toString();
-        if(TextUtils.isEmpty(realmSubDomain)){
+        if (TextUtils.isEmpty(realmSubDomain)) {
             realmSubDomainView.setError(getString(R.string.error_realmDomain_required));
             focusView = realmSubDomainView;
             cancel = true;
@@ -138,6 +154,8 @@ public class LoginActivity extends AppCompatActivity {
         private final String userId;
         private final String password;
 
+        private AuthResponse response;
+
         UserLoginTask(String realmSubDomain, String userId, String password, IAuthenticator authenticator) {
             this.authenticator = authenticator;
             this.realmName = realmSubDomain;
@@ -147,20 +165,19 @@ public class LoginActivity extends AppCompatActivity {
 
         @Override
         protected Boolean doInBackground(Void... params) {
-            ticket = authenticator.getTicket(realmName, userId, password);
-            return !ticket.equals(QbLogin.invalidTicket);
+            response = authenticator.getAuthResponse(realmName, userId, password);
+            return response.errcode.equals(OkResponseCode);
         }
 
         @Override
         protected void onPostExecute(final Boolean success) {
             showProgress(false);
 
-            Log.i("TAG_LOGIN",String.valueOf(success));
-
             if (success) {
+                QbLogin.currentTicket = response.ticket;
                 finish();
             } else {
-                authTask = null;
+                showError(getError());
             }
         }
 
@@ -168,6 +185,14 @@ public class LoginActivity extends AppCompatActivity {
         protected void onCancelled() {
             showProgress(false);
         }
+
+        private String getError() {
+            String errorText = "Error during authentication.";
+            if (response.errcode < StartingErrorCode) {
+                errorText = response.errtext + ". " + response.errdetail;
+            }
+
+            return errorText;
+        }
     }
 }
-

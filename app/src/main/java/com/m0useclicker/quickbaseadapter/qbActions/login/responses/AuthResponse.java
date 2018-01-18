@@ -8,7 +8,6 @@ public class AuthResponse extends QbResponse {
     public String ticket;
 
     public AuthResponse() {
-
     }
 
     public AuthResponse(Long errorCode) {
@@ -28,6 +27,6 @@ public class AuthResponse extends QbResponse {
     }
 
     public static AuthResponse invalidAuthResponse(){
-        return new AuthResponse(10000L);
+        return new AuthResponse(StartingErrorCode + 1L);
     }
 }

@@ -15,4 +15,7 @@
     <string name="hint_userId">User Name or Email</string>
     <string name="hint_realmName">Realm Name</string>
     <string name="prompt_userId">User email of Screen Name</string>
+
+    <string name="auth_error_dialog_title">Unable to authenticate</string>
+    <string name="quickbase_com">.quickbase.com</string>
 </resources>

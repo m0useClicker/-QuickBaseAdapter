@@ -18,6 +18,7 @@ import static org.apache.commons.lang3.StringUtils.isBlank;
 
 public class QbLogin implements IAuthenticator {
     public static final String invalidTicket = "";
+    public static String currentTicket = "";
 
     @Override
     public String getTicket(String realmSubDomain, String userId, String password) {

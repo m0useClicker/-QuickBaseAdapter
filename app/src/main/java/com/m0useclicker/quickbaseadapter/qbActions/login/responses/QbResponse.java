@@ -4,6 +4,9 @@ import com.google.api.client.repackaged.com.google.common.base.Objects;
 import com.google.api.client.util.Key;
 
 public class QbResponse {
+    public static final long OkResponseCode = 0;
+    public static final int StartingErrorCode = 10000;
+
     @Key
     public String errtext;
     @Key

@@ -40,9 +40,7 @@
                     android:layout_height="wrap_content"
                     android:hint="@string/prompt_userId"
                     android:inputType="textEmailAddress"
-                    android:maxLines="1"
-                    android:singleLine="true"
-                    tools:hint="@string/hint_userId"/>
+                    android:maxLines="1"/>
 
             </android.support.design.widget.TextInputLayout>
 
@@ -58,8 +56,7 @@
                     android:imeActionId="@+id/login"
                     android:imeOptions="actionUnspecified"
                     android:inputType="textPassword"
-                    android:maxLines="1"
-                    android:singleLine="true" />
+                    android:maxLines="1"/>
 
             </android.support.design.widget.TextInputLayout>
 
@@ -72,8 +69,7 @@
                     android:id="@+id/realmSubDomain"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:hint="@string/hint_realmName"
-                    tools:text=".quickbase.com"/>
+                    android:hint="@string/hint_realmName"/>
             </android.support.design.widget.TextInputLayout>
 
             <Button
