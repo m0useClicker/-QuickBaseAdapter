@@ -1,4 +1,4 @@
-package m0useclicker.com.quickbaseadapter.qbActions.login;
+package com.m0useclicker.quickbaseadapter.qbActions.login;
 
 import com.google.api.client.util.Key;
 

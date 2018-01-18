@@ -12,9 +12,7 @@
     <string name="error_incorrect_password">This password is incorrect</string>
     <string name="error_unable_authenticate">Unable to login.</string>
     <string name="error_userId_required">The user ID is required</string>
-    <string name="permission_rationale">"Contacts permissions are needed for providing email
-        completions."
-    </string>
+    <string name="error_realmDomain_required">The realm domain is required</string>
     <string name="hint_userId">User Name or Email</string>
     <string name="hint_realmName">Realm Name</string>
     <string name="prompt_userId">User email of Screen Name</string>
